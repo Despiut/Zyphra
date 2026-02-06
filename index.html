@@ -3,27 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clicker Game</title>
+<title>Zyphra Clicker</title>
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
     body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        margin-top: 50px;
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(circle at center, #0f0f1f, #000010);
+        color: #00f0ff;
+        font-family: 'Orbitron', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
     }
+
+    h1 {
+        margin-top: 40px;
+        font-size: 48px;
+        text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+    }
+
     #clickBtn {
-        padding: 20px 40px;
-        font-size: 24px;
+        margin-top: 50px;
+        padding: 30px 60px;
+        font-size: 32px;
+        color: #0ff;
+        background: linear-gradient(45deg, #0ff, #00aaff);
+        border: none;
+        border-radius: 20px;
         cursor: pointer;
+        box-shadow: 0 0 20px #0ff, 0 0 40px #00aaff;
+        transition: transform 0.1s, box-shadow 0.2s;
     }
+
+    #clickBtn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 30px #0ff, 0 0 60px #00aaff;
+    }
+
     #stats {
+        margin-top: 40px;
+        text-align: center;
+        font-size: 22px;
+    }
+
+    #buyAuto {
         margin-top: 20px;
-        font-size: 20px;
+        padding: 10px 25px;
+        font-size: 18px;
+        color: #0ff;
+        background: linear-gradient(45deg, #0044ff, #00ffff);
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        box-shadow: 0 0 10px #00ffff, 0 0 20px #0044ff;
+        transition: transform 0.1s, box-shadow 0.2s;
+    }
+
+    #buyAuto:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px #00ffff, 0 0 40px #0044ff;
     }
 </style>
 </head>
 <body>
-<h1>Clicker Game</h1>
-<button id="clickBtn">Click Me!</button>
+<h1>Zyphra Clicker</h1>
+<button id="clickBtn">⚡ CLICK ⚡</button>
+
 <div id="stats">
     <p>Clicks: <span id="clickCount">0</span></p>
     <p>Auto Clickers: <span id="autoCount">0</span></p>
@@ -31,8 +80,8 @@
 </div>
 
 <script>
-let clicks = parseInt(localStorage.getItem('clicks')) || 0
-let autoClickers = parseInt(localStorage.getItem('autoClickers')) || 0
+let clicks = parseInt(localStorage.getItem('zyphra_clicks')) || 0
+let autoClickers = parseInt(localStorage.getItem('zyphra_autos')) || 0
 
 const clickCountEl = document.getElementById('clickCount')
 const autoCountEl = document.getElementById('autoCount')
@@ -57,13 +106,13 @@ buyAutoBtn.addEventListener('click', () => {
         saveGame()
         updateUI()
     } else {
-        alert("Not enough clicks!")
+        alert("Insufficient clicks ⚡")
     }
 })
 
 function saveGame() {
-    localStorage.setItem('clicks', clicks)
-    localStorage.setItem('autoClickers', autoClickers)
+    localStorage.setItem('zyphra_clicks', clicks)
+    localStorage.setItem('zyphra_autos', autoClickers)
 }
 
 function autoClick() {
