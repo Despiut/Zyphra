@@ -1,181 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zyphra RNG Clicker</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-
-body {
-    margin: 0;
-    padding: 0;
-    background: radial-gradient(circle at center, #0f0f1f, #000010);
-    color: #00f0ff;
-    font-family: 'Orbitron', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-}
-
-h1 {
-    margin-top: 30px;
-    font-size: 44px;
-    text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
-}
-
-button {
-    cursor: pointer;
-    border: none;
-    border-radius: 15px;
-    font-family: 'Orbitron', sans-serif;
-}
-
-#clickBtn {
-    margin-top: 40px;
-    padding: 25px 50px;
-    font-size: 28px;
-    color: #0ff;
-    background: linear-gradient(45deg, #0ff, #00aaff);
-    box-shadow: 0 0 20px #0ff, 0 0 40px #00aaff;
-    transition: transform 0.1s, box-shadow 0.2s;
-}
-
-#clickBtn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 30px #0ff, 0 0 60px #00aaff;
-}
-
-#stats, #shop, #rng {
-    margin-top: 30px;
-    text-align: center;
-    font-size: 20px;
-}
-
-.shopBtn, #rngBtn {
-    margin-top: 10px;
-    padding: 10px 25px;
-    font-size: 18px;
-    color: #0ff;
-    background: linear-gradient(45deg, #0044ff, #00ffff);
-    box-shadow: 0 0 10px #00ffff, 0 0 20px #0044ff;
-    transition: transform 0.1s, box-shadow 0.2s;
-}
-
-.shopBtn:hover, #rngBtn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px #00ffff, 0 0 40px #0044ff;
-}
-
-#titles {
-    margin-top: 20px;
-    font-size: 18px;
-    color: #ff0;
-    text-shadow: 0 0 5px #ff0;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>Red World RPG</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-<h1>Zyphra RNG Clicker</h1>
-<button id="clickBtn">💰 CLICK 💰</button>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js';
+        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/controls/OrbitControls.js';
 
-<div id="stats">
-    <p>Money: $<span id="money">0</span></p>
-    <p>Auto Cash: <span id="autoCount">0</span></p>
-</div>
+        const worldSize = 100;
+        const blockSize = 1;
 
-<div id="shop">
-    <button class="shopBtn" id="buyAuto">Buy Auto Cash (Cost: $10)</button>
-</div>
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xff0000);
 
-<div id="rng">
-    <button id="rngBtn">RNG Roll (Cost: $100)</button>
-    <div id="titles">Titles: None</div>
-</div>
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(worldSize / 2, 50, worldSize + 20);
 
-<script>
-let money = parseInt(localStorage.getItem('money')) || 0
-let autoCash = parseInt(localStorage.getItem('autoCash')) || 0
-let titles = JSON.parse(localStorage.getItem('titles')) || []
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-let autoCost = parseInt(localStorage.getItem('autoCost')) || 10
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(worldSize / 2, 0, worldSize / 2);
+        controls.update();
 
-const moneyEl = document.getElementById('money')
-const autoCountEl = document.getElementById('autoCount')
-const clickBtn = document.getElementById('clickBtn')
-const buyAutoBtn = document.getElementById('buyAuto')
-const rngBtn = document.getElementById('rngBtn')
-const titlesEl = document.getElementById('titles')
+        const textures = {
+            bedrock: new THREE.MeshBasicMaterial({ color: 0x111111 }),
+            stone: new THREE.MeshBasicMaterial({ color: 0x888888 }),
+            dirt: new THREE.MeshBasicMaterial({ color: 0x654321 }),
+            grass: new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+        };
 
-function updateUI() {
-    moneyEl.textContent = money
-    autoCountEl.textContent = autoCash
-    buyAutoBtn.textContent = `Buy Auto Cash (Cost: $${autoCost})`
-    titlesEl.textContent = titles.length ? titles.join(", ") : "None"
-}
+        const world = [];
 
-clickBtn.addEventListener('click', () => {
-    money += 1 + getClickBoost()
-    saveGame()
-    updateUI()
-})
+        for (let x = 0; x < worldSize; x++) {
+            world[x] = [];
+            for (let z = 0; z < worldSize; z++) {
+                world[x][z] = [];
+                const height = 4;
+                for (let y = 0; y < height; y++) {
+                    let material;
+                    if (y === 0) material = textures.bedrock;
+                    else if (y === 1) material = textures.stone;
+                    else if (y === 2) material = textures.dirt;
+                    else material = textures.grass;
 
-buyAutoBtn.addEventListener('click', () => {
-    if (money >= autoCost) {
-        money -= autoCost
-        autoCash++
-        autoCost = Math.floor(autoCost * 1.5)
-        saveGame()
-        updateUI()
-    } else {
-        alert("Not enough money!")
-    }
-})
-
-rngBtn.addEventListener('click', () => {
-    if (money >= 100) {
-        money -= 100
-        const title = getRandomTitle()
-        if (!titles.includes(title)) {
-            titles.push(title)
+                    const cube = new THREE.Mesh(new THREE.BoxGeometry(blockSize, blockSize, blockSize), material);
+                    cube.position.set(x, y, z);
+                    scene.add(cube);
+                    world[x][z][y] = { mesh: cube, type: y };
+                }
+            }
         }
-        saveGame()
-        updateUI()
-    } else {
-        alert("Need $100 to roll RNG!")
-    }
-})
 
-function saveGame() {
-    localStorage.setItem('money', money)
-    localStorage.setItem('autoCash', autoCash)
-    localStorage.setItem('autoCost', autoCost)
-    localStorage.setItem('titles', JSON.stringify(titles))
-}
+        const playerGeometry = new THREE.BoxGeometry(0.8, 1.8, 0.8);
+        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const player = new THREE.Mesh(playerGeometry, playerMaterial);
+        player.position.set(worldSize / 2, 5, worldSize / 2);
+        scene.add(player);
 
-function autoClick() {
-    money += autoCash + getClickBoost()
-    saveGame()
-    updateUI()
-}
+        const keys = {};
+        document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
+        document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
 
-function getClickBoost() {
-    let boost = 0
-    titles.forEach(t => {
-        if (t === "Lucky") boost += 1
-        if (t === "Rich") boost += 2
-    })
-    return boost
-}
+        function movePlayer() {
+            const speed = 0.3;
+            if (keys['w']) player.position.z -= speed;
+            if (keys['s']) player.position.z += speed;
+            if (keys['a']) player.position.x -= speed;
+            if (keys['d']) player.position.x += speed;
+        }
 
-function getRandomTitle() {
-    const possible = ["Lucky", "Rich", "Speedy", "Futurist", "Tycoon"]
-    return possible[Math.floor(Math.random() * possible.length)]
-}
-
-setInterval(autoClick, 1000)
-updateUI()
-</script>
+        function animate() {
+            requestAnimationFrame(animate);
+            movePlayer();
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
 </body>
 </html>
