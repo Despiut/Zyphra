@@ -3,7 +3,7 @@
 <head>
 <title>Zyphra</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; font-family:Arial, Helvetica, sans-serif }
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 
 body{
     background:#0e0e0e;
@@ -11,7 +11,7 @@ body{
     overflow:hidden;
 }
 
-#home, #builder{
+#home,#builder{
     position:fixed;
     inset:0;
     display:flex;
@@ -42,9 +42,7 @@ button:hover{
     transform:scale(1.05);
 }
 
-#builder{
-    display:none;
-}
+#builder{display:none}
 
 #topbar{
     position:fixed;
@@ -68,59 +66,67 @@ button:hover{
     text-align:center;
     font-size:18px;
     color:#aaa;
+    z-index:10;
 }
 
 canvas{
     position:fixed;
     inset:0;
+    pointer-events:none;
+    z-index:1;
 }
 </style>
 </head>
 <body>
 
-<div id="home">
+<div id="home" style="z-index:5">
     <h1>Zyphra</h1>
     <button id="startBtn">Get Started</button>
 </div>
 
-<div id="builder">
+<div id="builder" style="z-index:5">
     <div id="topbar">
-        <button onclick="addProton()">Add Proton</button>
-        <button onclick="addNeutron()">Add Neutron</button>
-        <button onclick="addElectron()">Add Electron</button>
+        <button id="pBtn">Add Proton</button>
+        <button id="nBtn">Add Neutron</button>
+        <button id="eBtn">Add Electron</button>
     </div>
     <canvas id="canvas"></canvas>
     <div id="info"></div>
 </div>
 
 <script>
-const startBtn = document.getElementById("startBtn")
-const home = document.getElementById("home")
-const builder = document.getElementById("builder")
-const canvas = document.getElementById("canvas")
-const ctx = canvas.getContext("2d")
-const info = document.getElementById("info")
+const startBtn=document.getElementById("startBtn")
+const home=document.getElementById("home")
+const builder=document.getElementById("builder")
+
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
+
+const pBtn=document.getElementById("pBtn")
+const nBtn=document.getElementById("nBtn")
+const eBtn=document.getElementById("eBtn")
+const info=document.getElementById("info")
 
 function resize(){
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+    canvas.width=window.innerWidth
+    canvas.height=window.innerHeight
     drawAtom()
 }
-window.onresize = resize
+window.addEventListener("resize",resize)
 resize()
 
-startBtn.onclick = () => {
+startBtn.onclick=()=>{
     home.style.display="none"
     builder.style.display="flex"
 }
 
-let protons=0, neutrons=0, electrons=0
+let protons=0,neutrons=0,electrons=0
 const shellLimits=[2,8,18,32,32,18,8]
 
-function addProton(){ protons++; drawAtom() }
-function addNeutron(){ neutrons++; drawAtom() }
+pBtn.onclick=()=>{protons++;drawAtom()}
+nBtn.onclick=()=>{neutrons++;drawAtom()}
 
-function addElectron(){
+eBtn.onclick=()=>{
     let remaining=electrons
     for(let i=0;i<shellLimits.length;i++){
         if(remaining<shellLimits[i]){
@@ -136,7 +142,6 @@ function drawAtom(){
     ctx.clearRect(0,0,canvas.width,canvas.height)
     const cx=canvas.width/2
     const cy=canvas.height/2+20
-
     const base=Math.min(canvas.width,canvas.height)/8
 
     ctx.beginPath()
