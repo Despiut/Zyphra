@@ -81,81 +81,103 @@ canvas{
 </div>
 
 <script>
-const home=document.getElementById("home")
-const builder=document.getElementById("builder")
-const startBtn=document.getElementById("startBtn")
-
-startBtn.onclick=()=>{
-    home.style.display="none"
-    builder.style.display="flex"
-}
-
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
 
 function resize(){
     canvas.width=window.innerWidth
     canvas.height=window.innerHeight
-    draw()
 }
 window.addEventListener("resize",resize)
 resize()
 
-let protons=0,neutrons=0,electrons=0
-const limits=[2,8,18,32,32,18,8]
-
-document.getElementById("pBtn").onclick=()=>{protons++;draw()}
-document.getElementById("nBtn").onclick=()=>{neutrons++;draw()}
-document.getElementById("eBtn").onclick=()=>{
-    let r=electrons
-    for(let i=0;i<limits.length;i++){
-        if(r<limits[i]){electrons++;draw();return}
-        r-=limits[i]
-    }
+const home=document.getElementById("home")
+const builder=document.getElementById("builder")
+document.getElementById("startBtn").onclick=()=>{
+    home.style.display="none"
+    builder.style.display="flex"
 }
+
+let mode=null
+let placing=null
+
+const rings=[140,220,300]
+let electrons=[]
+let nucleons=[]
+
+document.getElementById("pBtn").onclick=()=>{mode="proton"}
+document.getElementById("nBtn").onclick=()=>{mode="neutron"}
+document.getElementById("eBtn").onclick=()=>{mode="electron"}
+
+canvas.addEventListener("click",e=>{
+    const rect=canvas.getBoundingClientRect()
+    const mx=e.clientX-rect.left
+    const my=e.clientY-rect.top
+    const cx=canvas.width/2
+    const cy=canvas.height/2
+
+    const dx=mx-cx
+    const dy=my-cy
+    const dist=Math.sqrt(dx*dx+dy*dy)
+
+    if(mode==="electron"){
+        for(let r of rings){
+            if(Math.abs(dist-r)<15){
+                electrons.push({ring:r,angle:Math.random()*Math.PI*2})
+                break
+            }
+        }
+    }
+
+    if(mode==="proton"||mode==="neutron"){
+        if(dist<80){
+            nucleons.push({type:mode,angle:Math.random()*Math.PI*2,radius:Math.random()*40})
+        }
+    }
+})
 
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height)
 
-    let cx=canvas.width/2
-    let cy=canvas.height/2
-    let base=Math.min(canvas.width,canvas.height)/10
+    const cx=canvas.width/2
+    const cy=canvas.height/2
 
     ctx.beginPath()
-    ctx.arc(cx,cy,base,0,Math.PI*2)
+    ctx.arc(cx,cy,80,0,Math.PI*2)
     ctx.fillStyle="rgba(150,150,150,0.4)"
     ctx.fill()
 
-    let remain=electrons
-    let shells=[]
-    for(let i=0;i<limits.length;i++){
-        let c=Math.min(remain,limits[i])
-        if(c<=0)break
-        shells.push(c)
-        remain-=c
-    }
-
-    for(let i=0;i<shells.length;i++){
-        let rad=base*(2+i)
+    for(let r of rings){
         ctx.beginPath()
-        ctx.arc(cx,cy,rad,0,Math.PI*2)
+        ctx.arc(cx,cy,r,0,Math.PI*2)
         ctx.strokeStyle="rgba(255,255,255,0.2)"
         ctx.stroke()
-
-        for(let j=0;j<shells[i];j++){
-            let a=(j/shells[i])*Math.PI*2
-            let x=cx+Math.cos(a)*rad
-            let y=cy+Math.sin(a)*rad
-            ctx.beginPath()
-            ctx.arc(x,y,6,0,Math.PI*2)
-            ctx.fillStyle="cyan"
-            ctx.fill()
-        }
     }
 
-    document.getElementById("info").textContent=
-        `Protons: ${protons} | Neutrons: ${neutrons} | Electrons: ${electrons}`
+    for(let n of nucleons){
+        n.angle+=0.01
+        const x=cx+Math.cos(n.angle)*n.radius
+        const y=cy+Math.sin(n.angle)*n.radius
+        ctx.beginPath()
+        ctx.arc(x,y,8,0,Math.PI*2)
+        ctx.fillStyle=n.type==="proton"?"#ff5555":"#aaaaaa"
+        ctx.fill()
+    }
+
+    for(let e of electrons){
+        e.angle+=0.02
+        const x=cx+Math.cos(e.angle)*e.ring
+        const y=cy+Math.sin(e.angle)*e.ring
+        ctx.beginPath()
+        ctx.arc(x,y,6,0,Math.PI*2)
+        ctx.fillStyle="cyan"
+        ctx.fill()
+    }
+
+    requestAnimationFrame(draw)
 }
+
+draw()
 </script>
 
 </body>
