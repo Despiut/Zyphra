@@ -1,169 +1,179 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Zyphra</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial;
-            color: white;
-            background-color: #111;
-            background-image: 
-                linear-gradient(rgba(200, 200, 200, 0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(200, 200, 200, 0.2) 1px, transparent 1px);
-            background-size: 100px 100px;
-            background-position: center;
-            overflow: hidden;
-        }
+<title>Zyphra</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:Arial, Helvetica, sans-serif }
 
-        #home, #builder {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
+body{
+    background:#0e0e0e;
+    color:white;
+    overflow:hidden;
+}
 
-        #builder {
-            display: none;
-        }
+#home, #builder{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+}
 
-        h1 {
-            font-size: 90px;
-            margin-top: 120px;
-        }
+h1{
+    font-size:90px;
+    margin-bottom:40px;
+    letter-spacing:8px;
+}
 
-        button {
-            padding: 15px 30px;
-            font-size: 20px;
-            background: #444;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 6px;
-        }
+button{
+    padding:16px 40px;
+    font-size:20px;
+    border-radius:8px;
+    border:none;
+    background:#2b2b2b;
+    color:white;
+    cursor:pointer;
+    transition:0.2s;
+}
 
-        #startBtn {
-            position: absolute;
-            top: 55%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+button:hover{
+    background:#3a3a3a;
+    transform:scale(1.05);
+}
 
-        #controls {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            text-align: center;
-        }
+#builder{
+    display:none;
+}
 
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-    </style>
+#topbar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:80px;
+    background:#161616;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:20px;
+    z-index:10;
+    border-bottom:1px solid #333;
+}
+
+#info{
+    position:fixed;
+    bottom:20px;
+    width:100%;
+    text-align:center;
+    font-size:18px;
+    color:#aaa;
+}
+
+canvas{
+    position:fixed;
+    inset:0;
+}
+</style>
 </head>
 <body>
 
 <div id="home">
-    <h1>| Zyphra |</h1>
+    <h1>Zyphra</h1>
     <button id="startBtn">Get Started</button>
 </div>
 
 <div id="builder">
-    <div id="controls">
+    <div id="topbar">
         <button onclick="addProton()">Add Proton</button>
         <button onclick="addNeutron()">Add Neutron</button>
         <button onclick="addElectron()">Add Electron</button>
-        <p id="info"></p>
     </div>
-    <canvas id="atomCanvas"></canvas>
+    <canvas id="canvas"></canvas>
+    <div id="info"></div>
 </div>
 
 <script>
 const startBtn = document.getElementById("startBtn")
 const home = document.getElementById("home")
 const builder = document.getElementById("builder")
-const canvas = document.getElementById("atomCanvas")
+const canvas = document.getElementById("canvas")
 const ctx = canvas.getContext("2d")
 const info = document.getElementById("info")
 
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+function resize(){
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    drawAtom()
+}
+window.onresize = resize
+resize()
 
 startBtn.onclick = () => {
-    home.style.display = "none"
-    builder.style.display = "block"
+    home.style.display="none"
+    builder.style.display="flex"
 }
 
-let protons = 0
-let neutrons = 0
-let electrons = 0
+let protons=0, neutrons=0, electrons=0
+const shellLimits=[2,8,18,32,32,18,8]
 
-const shellLimits = [2,8,18,32,32,18,8]
-
-function addProton(){
-    protons++
-    drawAtom()
-}
-
-function addNeutron(){
-    neutrons++
-    drawAtom()
-}
+function addProton(){ protons++; drawAtom() }
+function addNeutron(){ neutrons++; drawAtom() }
 
 function addElectron(){
-    let remaining = electrons
+    let remaining=electrons
     for(let i=0;i<shellLimits.length;i++){
-        if(remaining < shellLimits[i]){
+        if(remaining<shellLimits[i]){
             electrons++
             drawAtom()
             return
         }
-        remaining -= shellLimits[i]
+        remaining-=shellLimits[i]
     }
 }
 
 function drawAtom(){
     ctx.clearRect(0,0,canvas.width,canvas.height)
-    let centerX = canvas.width/2
-    let centerY = canvas.height/2
+    const cx=canvas.width/2
+    const cy=canvas.height/2+20
+
+    const base=Math.min(canvas.width,canvas.height)/8
 
     ctx.beginPath()
-    ctx.arc(centerX, centerY, 60, 0, Math.PI*2)
-    ctx.fillStyle = "rgba(150,150,150,0.5)"
+    ctx.arc(cx,cy,base*0.6,0,Math.PI*2)
+    ctx.fillStyle="rgba(180,180,180,0.4)"
     ctx.fill()
 
-    let shells = []
-    let remaining = electrons
-
+    let remaining=electrons
+    let shells=[]
     for(let i=0;i<shellLimits.length;i++){
-        let count = Math.min(remaining, shellLimits[i])
+        let count=Math.min(remaining,shellLimits[i])
+        if(count<=0) break
         shells.push(count)
-        remaining -= count
-        if(remaining <= 0) break
+        remaining-=count
     }
 
     for(let i=0;i<shells.length;i++){
-        let radius = 120 + i*60
+        let radius=base*(1.4+i*0.9)
 
         ctx.beginPath()
-        ctx.arc(centerX, centerY, radius, 0, Math.PI*2)
-        ctx.strokeStyle = "rgba(255,255,255,0.2)"
+        ctx.arc(cx,cy,radius,0,Math.PI*2)
+        ctx.strokeStyle="rgba(255,255,255,0.15)"
+        ctx.lineWidth=2
         ctx.stroke()
 
         for(let j=0;j<shells[i];j++){
-            let angle = (j/shells[i]) * Math.PI*2
-            let x = centerX + Math.cos(angle)*radius
-            let y = centerY + Math.sin(angle)*radius
-
+            let angle=(j/shells[i])*Math.PI*2
+            let x=cx+Math.cos(angle)*radius
+            let y=cy+Math.sin(angle)*radius
             ctx.beginPath()
             ctx.arc(x,y,6,0,Math.PI*2)
-            ctx.fillStyle = "cyan"
+            ctx.fillStyle="#00e5ff"
             ctx.fill()
         }
     }
 
-    info.innerText = `Protons: ${protons} | Neutrons: ${neutrons} | Electrons: ${electrons}`
+    info.textContent=`Protons: ${protons}   |   Neutrons: ${neutrons}   |   Electrons: ${electrons}`
 }
 </script>
 
