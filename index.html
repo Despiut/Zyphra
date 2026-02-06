@@ -3,34 +3,25 @@
 <head>
 <title>Zyphra</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-
 body{
-    font-family: Arial;
-    color: white;
-    background-color: #111;
-    background-image: 
-        linear-gradient(rgba(200, 200, 200, 0.2) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(200, 200, 200, 0.2) 1px, transparent 1px);
-    background-size: 100px 100px;
-    background-position: center;
-    overflow:hidden;
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    color:white;
+    background-color:#111;
+    background-image:
+        linear-gradient(rgba(200,200,200,0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200,200,200,0.2) 1px, transparent 1px);
+    background-size:100px 100px;
+    background-position:center;
 }
 
-canvas{
-    position:fixed;
-    inset:0;
-    z-index:0;
-}
-
-#home,#builder{
-    position:fixed;
-    inset:0;
+.screen{
+    width:100vw;
+    height:100vh;
     display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
-    flex-direction:column;
-    z-index:2;
 }
 
 #builder{display:none}
@@ -38,37 +29,25 @@ canvas{
 h1{
     font-size:90px;
     margin-bottom:40px;
-    letter-spacing:8px;
+    letter-spacing:6px;
 }
 
 button{
-    padding:16px 40px;
+    padding:15px 35px;
     font-size:20px;
     border-radius:8px;
     border:none;
     background:#2b2b2b;
     color:white;
     cursor:pointer;
-    transition:0.2s;
+    margin:5px;
 }
 
-button:hover{
-    background:#3a3a3a;
-    transform:scale(1.05);
-}
-
-#topbar{
+#controls{
     position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:80px;
-    background:#161616;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:20px;
-    border-bottom:1px solid #333;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
 }
 
 #info{
@@ -76,106 +55,97 @@ button:hover{
     bottom:20px;
     width:100%;
     text-align:center;
-    font-size:18px;
-    color:#aaa;
+}
+
+canvas{
+    display:block;
+    margin:auto;
 }
 </style>
 </head>
 <body>
 
-<canvas id="canvas"></canvas>
-
-<div id="home">
+<div id="home" class="screen">
     <h1>Zyphra</h1>
     <button id="startBtn">Get Started</button>
 </div>
 
-<div id="builder">
-    <div id="topbar">
+<div id="builder" class="screen">
+    <div id="controls">
         <button id="pBtn">Add Proton</button>
         <button id="nBtn">Add Neutron</button>
         <button id="eBtn">Add Electron</button>
     </div>
+    <canvas id="canvas"></canvas>
     <div id="info"></div>
 </div>
 
 <script>
-const canvas=document.getElementById("canvas")
-const ctx=canvas.getContext("2d")
-
-function resize(){
-    canvas.width=window.innerWidth
-    canvas.height=window.innerHeight
-    drawAtom()
-}
-window.addEventListener("resize",resize)
-resize()
-
-const startBtn=document.getElementById("startBtn")
 const home=document.getElementById("home")
 const builder=document.getElementById("builder")
-const pBtn=document.getElementById("pBtn")
-const nBtn=document.getElementById("nBtn")
-const eBtn=document.getElementById("eBtn")
-const info=document.getElementById("info")
+const startBtn=document.getElementById("startBtn")
 
 startBtn.onclick=()=>{
     home.style.display="none"
     builder.style.display="flex"
 }
 
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
+
+function resize(){
+    canvas.width=window.innerWidth
+    canvas.height=window.innerHeight
+    draw()
+}
+window.addEventListener("resize",resize)
+resize()
+
 let protons=0,neutrons=0,electrons=0
-const shellLimits=[2,8,18,32,32,18,8]
+const limits=[2,8,18,32,32,18,8]
 
-pBtn.onclick=()=>{protons++;drawAtom()}
-nBtn.onclick=()=>{neutrons++;drawAtom()}
-
-eBtn.onclick=()=>{
-    let remaining=electrons
-    for(let i=0;i<shellLimits.length;i++){
-        if(remaining<shellLimits[i]){
-            electrons++
-            drawAtom()
-            return
-        }
-        remaining-=shellLimits[i]
+document.getElementById("pBtn").onclick=()=>{protons++;draw()}
+document.getElementById("nBtn").onclick=()=>{neutrons++;draw()}
+document.getElementById("eBtn").onclick=()=>{
+    let r=electrons
+    for(let i=0;i<limits.length;i++){
+        if(r<limits[i]){electrons++;draw();return}
+        r-=limits[i]
     }
 }
 
-function drawAtom(){
+function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height)
 
-    const cx=canvas.width/2
-    const cy=canvas.height/2
-    const base=Math.min(canvas.width,canvas.height)/8
+    let cx=canvas.width/2
+    let cy=canvas.height/2
+    let base=Math.min(canvas.width,canvas.height)/10
 
     ctx.beginPath()
-    ctx.arc(cx,cy,base*0.6,0,Math.PI*2)
+    ctx.arc(cx,cy,base,0,Math.PI*2)
     ctx.fillStyle="rgba(150,150,150,0.4)"
     ctx.fill()
 
-    let remaining=electrons
+    let remain=electrons
     let shells=[]
-    for(let i=0;i<shellLimits.length;i++){
-        let count=Math.min(remaining,shellLimits[i])
-        if(count<=0) break
-        shells.push(count)
-        remaining-=count
+    for(let i=0;i<limits.length;i++){
+        let c=Math.min(remain,limits[i])
+        if(c<=0)break
+        shells.push(c)
+        remain-=c
     }
 
     for(let i=0;i<shells.length;i++){
-        let radius=base*(1.5+i)
-
+        let rad=base*(2+i)
         ctx.beginPath()
-        ctx.arc(cx,cy,radius,0,Math.PI*2)
+        ctx.arc(cx,cy,rad,0,Math.PI*2)
         ctx.strokeStyle="rgba(255,255,255,0.2)"
         ctx.stroke()
 
         for(let j=0;j<shells[i];j++){
-            let angle=(j/shells[i])*Math.PI*2
-            let x=cx+Math.cos(angle)*radius
-            let y=cy+Math.sin(angle)*radius
-
+            let a=(j/shells[i])*Math.PI*2
+            let x=cx+Math.cos(a)*rad
+            let y=cy+Math.sin(a)*rad
             ctx.beginPath()
             ctx.arc(x,y,6,0,Math.PI*2)
             ctx.fillStyle="cyan"
@@ -183,7 +153,8 @@ function drawAtom(){
         }
     }
 
-    info.textContent=`Protons: ${protons} | Neutrons: ${neutrons} | Electrons: ${electrons}`
+    document.getElementById("info").textContent=
+        `Protons: ${protons} | Neutrons: ${neutrons} | Electrons: ${electrons}`
 }
 </script>
 
