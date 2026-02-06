@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Syphra</title>
+    <title>Zyphra</title>
     <style>
         body {
+            margin: 0;
             font-family: Arial;
-            text-align: center;
-            margin-top: 100px;
             color: white;
             background-color: #111;
             background-image: 
@@ -14,17 +13,159 @@
                 linear-gradient(90deg, rgba(200, 200, 200, 0.2) 1px, transparent 1px);
             background-size: 100px 100px;
             background-position: center;
+            overflow: hidden;
         }
+
+        #home, #builder {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        #builder {
+            display: none;
+        }
+
         h1 {
-            font-size: 100px;
+            font-size: 90px;
+            margin-top: 120px;
         }
-        p {
+
+        button {
+            padding: 15px 30px;
             font-size: 20px;
+            background: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+
+        #startBtn {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
-    <h1>|| Zyphra ||</h1>
-    <p>Welcome</p>
+
+<div id="home">
+    <h1>| Zyphra |</h1>
+    <button id="startBtn">Get Started</button>
+</div>
+
+<div id="builder">
+    <div id="controls">
+        <button onclick="addProton()">Add Proton</button>
+        <button onclick="addNeutron()">Add Neutron</button>
+        <button onclick="addElectron()">Add Electron</button>
+        <p id="info"></p>
+    </div>
+    <canvas id="atomCanvas"></canvas>
+</div>
+
+<script>
+const startBtn = document.getElementById("startBtn")
+const home = document.getElementById("home")
+const builder = document.getElementById("builder")
+const canvas = document.getElementById("atomCanvas")
+const ctx = canvas.getContext("2d")
+const info = document.getElementById("info")
+
+canvas.width = window.innerWidth
+canvas.height = window.innerHeight
+
+startBtn.onclick = () => {
+    home.style.display = "none"
+    builder.style.display = "block"
+}
+
+let protons = 0
+let neutrons = 0
+let electrons = 0
+
+const shellLimits = [2,8,18,32,32,18,8]
+
+function addProton(){
+    protons++
+    drawAtom()
+}
+
+function addNeutron(){
+    neutrons++
+    drawAtom()
+}
+
+function addElectron(){
+    let remaining = electrons
+    for(let i=0;i<shellLimits.length;i++){
+        if(remaining < shellLimits[i]){
+            electrons++
+            drawAtom()
+            return
+        }
+        remaining -= shellLimits[i]
+    }
+}
+
+function drawAtom(){
+    ctx.clearRect(0,0,canvas.width,canvas.height)
+    let centerX = canvas.width/2
+    let centerY = canvas.height/2
+
+    ctx.beginPath()
+    ctx.arc(centerX, centerY, 60, 0, Math.PI*2)
+    ctx.fillStyle = "rgba(150,150,150,0.5)"
+    ctx.fill()
+
+    let shells = []
+    let remaining = electrons
+
+    for(let i=0;i<shellLimits.length;i++){
+        let count = Math.min(remaining, shellLimits[i])
+        shells.push(count)
+        remaining -= count
+        if(remaining <= 0) break
+    }
+
+    for(let i=0;i<shells.length;i++){
+        let radius = 120 + i*60
+
+        ctx.beginPath()
+        ctx.arc(centerX, centerY, radius, 0, Math.PI*2)
+        ctx.strokeStyle = "rgba(255,255,255,0.2)"
+        ctx.stroke()
+
+        for(let j=0;j<shells[i];j++){
+            let angle = (j/shells[i]) * Math.PI*2
+            let x = centerX + Math.cos(angle)*radius
+            let y = centerY + Math.sin(angle)*radius
+
+            ctx.beginPath()
+            ctx.arc(x,y,6,0,Math.PI*2)
+            ctx.fillStyle = "cyan"
+            ctx.fill()
+        }
+    }
+
+    info.innerText = `Protons: ${protons} | Neutrons: ${neutrons} | Electrons: ${electrons}`
+}
+</script>
+
 </body>
 </html>
