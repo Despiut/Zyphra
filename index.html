@@ -6,9 +6,21 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 
 body{
-    background:#0e0e0e;
-    color:white;
+    font-family: Arial;
+    color: white;
+    background-color: #111;
+    background-image: 
+        linear-gradient(rgba(200, 200, 200, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200, 200, 200, 0.2) 1px, transparent 1px);
+    background-size: 100px 100px;
+    background-position: center;
     overflow:hidden;
+}
+
+canvas{
+    position:fixed;
+    inset:0;
+    z-index:0;
 }
 
 #home,#builder{
@@ -18,7 +30,10 @@ body{
     align-items:center;
     justify-content:center;
     flex-direction:column;
+    z-index:2;
 }
+
+#builder{display:none}
 
 h1{
     font-size:90px;
@@ -42,8 +57,6 @@ button:hover{
     transform:scale(1.05);
 }
 
-#builder{display:none}
-
 #topbar{
     position:fixed;
     top:0;
@@ -55,7 +68,6 @@ button:hover{
     align-items:center;
     justify-content:center;
     gap:20px;
-    z-index:10;
     border-bottom:1px solid #333;
 }
 
@@ -66,46 +78,30 @@ button:hover{
     text-align:center;
     font-size:18px;
     color:#aaa;
-    z-index:10;
-}
-
-canvas{
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-    z-index:1;
 }
 </style>
 </head>
 <body>
 
-<div id="home" style="z-index:5">
+<canvas id="canvas"></canvas>
+
+<div id="home">
     <h1>Zyphra</h1>
     <button id="startBtn">Get Started</button>
 </div>
 
-<div id="builder" style="z-index:5">
+<div id="builder">
     <div id="topbar">
         <button id="pBtn">Add Proton</button>
         <button id="nBtn">Add Neutron</button>
         <button id="eBtn">Add Electron</button>
     </div>
-    <canvas id="canvas"></canvas>
     <div id="info"></div>
 </div>
 
 <script>
-const startBtn=document.getElementById("startBtn")
-const home=document.getElementById("home")
-const builder=document.getElementById("builder")
-
 const canvas=document.getElementById("canvas")
 const ctx=canvas.getContext("2d")
-
-const pBtn=document.getElementById("pBtn")
-const nBtn=document.getElementById("nBtn")
-const eBtn=document.getElementById("eBtn")
-const info=document.getElementById("info")
 
 function resize(){
     canvas.width=window.innerWidth
@@ -114,6 +110,14 @@ function resize(){
 }
 window.addEventListener("resize",resize)
 resize()
+
+const startBtn=document.getElementById("startBtn")
+const home=document.getElementById("home")
+const builder=document.getElementById("builder")
+const pBtn=document.getElementById("pBtn")
+const nBtn=document.getElementById("nBtn")
+const eBtn=document.getElementById("eBtn")
+const info=document.getElementById("info")
 
 startBtn.onclick=()=>{
     home.style.display="none"
@@ -140,13 +144,14 @@ eBtn.onclick=()=>{
 
 function drawAtom(){
     ctx.clearRect(0,0,canvas.width,canvas.height)
+
     const cx=canvas.width/2
-    const cy=canvas.height/2+20
+    const cy=canvas.height/2
     const base=Math.min(canvas.width,canvas.height)/8
 
     ctx.beginPath()
     ctx.arc(cx,cy,base*0.6,0,Math.PI*2)
-    ctx.fillStyle="rgba(180,180,180,0.4)"
+    ctx.fillStyle="rgba(150,150,150,0.4)"
     ctx.fill()
 
     let remaining=electrons
@@ -159,26 +164,26 @@ function drawAtom(){
     }
 
     for(let i=0;i<shells.length;i++){
-        let radius=base*(1.4+i*0.9)
+        let radius=base*(1.5+i)
 
         ctx.beginPath()
         ctx.arc(cx,cy,radius,0,Math.PI*2)
-        ctx.strokeStyle="rgba(255,255,255,0.15)"
-        ctx.lineWidth=2
+        ctx.strokeStyle="rgba(255,255,255,0.2)"
         ctx.stroke()
 
         for(let j=0;j<shells[i];j++){
             let angle=(j/shells[i])*Math.PI*2
             let x=cx+Math.cos(angle)*radius
             let y=cy+Math.sin(angle)*radius
+
             ctx.beginPath()
             ctx.arc(x,y,6,0,Math.PI*2)
-            ctx.fillStyle="#00e5ff"
+            ctx.fillStyle="cyan"
             ctx.fill()
         }
     }
 
-    info.textContent=`Protons: ${protons}   |   Neutrons: ${neutrons}   |   Electrons: ${electrons}`
+    info.textContent=`Protons: ${protons} | Neutrons: ${neutrons} | Electrons: ${electrons}`
 }
 </script>
 
