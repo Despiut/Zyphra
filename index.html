@@ -13,6 +13,7 @@ body{
         linear-gradient(90deg, rgba(200,200,200,0.2) 1px, transparent 1px);
     background-size:100px 100px;
     background-position:center;
+    overflow:hidden;
 }
 
 .screen{
@@ -48,6 +49,7 @@ button{
     top:10px;
     left:50%;
     transform:translateX(-50%);
+    z-index:2;
 }
 
 #info{
@@ -55,15 +57,50 @@ button{
     bottom:20px;
     width:100%;
     text-align:center;
+    z-index:2;
 }
 
 canvas{
     display:block;
     margin:auto;
+    position:fixed;
+    inset:0;
+    z-index:1;
+}
+
+#sideUI{
+    position:fixed;
+    right:20px;
+    top:50%;
+    transform:translateY(-50%);
+    width:220px;
+    background:#1b1b1b;
+    padding:20px;
+    border-radius:10px;
+    border:1px solid #333;
+    text-align:center;
+    z-index:2;
+}
+
+#sideUI h2{
+    margin-bottom:10px;
+    color:#aaa;
+}
+
+#elementName{
+    font-size:22px;
+    margin-bottom:10px;
+}
+
+#elementData{
+    font-size:14px;
+    color:#bbb;
 }
 </style>
 </head>
 <body>
+
+<canvas id="canvas"></canvas>
 
 <div id="home" class="screen">
     <h1>Zyphra</h1>
@@ -76,8 +113,11 @@ canvas{
         <button id="nBtn">Add Neutron</button>
         <button id="eBtn">Add Electron</button>
     </div>
-    <canvas id="canvas"></canvas>
-    <div id="info"></div>
+    <div id="sideUI">
+        <h2>Element</h2>
+        <div id="elementName">Unknown</div>
+        <div id="elementData"></div>
+    </div>
 </div>
 
 <script>
@@ -99,11 +139,17 @@ document.getElementById("startBtn").onclick=()=>{
 }
 
 let mode=null
-let placing=null
-
 const rings=[140,220,300]
 let electrons=[]
 let nucleons=[]
+
+const elementName=document.getElementById("elementName")
+const elementData=document.getElementById("elementData")
+
+const elements=[
+"", "Hydrogen","Helium","Lithium","Beryllium","Boron","Carbon","Nitrogen","Oxygen","Fluorine","Neon",
+"Sodium","Magnesium","Aluminum","Silicon","Phosphorus","Sulfur","Chlorine","Argon","Potassium","Calcium"
+]
 
 document.getElementById("pBtn").onclick=()=>{mode="proton"}
 document.getElementById("nBtn").onclick=()=>{mode="neutron"}
@@ -115,7 +161,6 @@ canvas.addEventListener("click",e=>{
     const my=e.clientY-rect.top
     const cx=canvas.width/2
     const cy=canvas.height/2
-
     const dx=mx-cx
     const dy=my-cy
     const dist=Math.sqrt(dx*dx+dy*dy)
@@ -134,7 +179,23 @@ canvas.addEventListener("click",e=>{
             nucleons.push({type:mode,angle:Math.random()*Math.PI*2,radius:Math.random()*40})
         }
     }
+
+    updateElement()
 })
+
+function updateElement(){
+    const protons=nucleons.filter(n=>n.type==="proton").length
+    const neutrons=nucleons.filter(n=>n.type==="neutron").length
+    const electronsCount=electrons.length
+
+    let name=elements[protons]||"Unknown Element"
+
+    elementName.textContent=name
+    elementData.textContent=
+        `Protons: ${protons}
+Neutrons: ${neutrons}
+Electrons: ${electronsCount}`
+}
 
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height)
@@ -165,20 +226,3 @@ function draw(){
     }
 
     for(let e of electrons){
-        e.angle+=0.02
-        const x=cx+Math.cos(e.angle)*e.ring
-        const y=cy+Math.sin(e.angle)*e.ring
-        ctx.beginPath()
-        ctx.arc(x,y,6,0,Math.PI*2)
-        ctx.fillStyle="cyan"
-        ctx.fill()
-    }
-
-    requestAnimationFrame(draw)
-}
-
-draw()
-</script>
-
-</body>
-</html>
