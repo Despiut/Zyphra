@@ -3,122 +3,175 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zyphra Clicker</title>
+<title>Zyphra RNG Clicker</title>
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-    body {
-        margin: 0;
-        padding: 0;
-        background: radial-gradient(circle at center, #0f0f1f, #000010);
-        color: #00f0ff;
-        font-family: 'Orbitron', sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        min-height: 100vh;
-    }
+body {
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle at center, #0f0f1f, #000010);
+    color: #00f0ff;
+    font-family: 'Orbitron', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
 
-    h1 {
-        margin-top: 40px;
-        font-size: 48px;
-        text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
-    }
+h1 {
+    margin-top: 30px;
+    font-size: 44px;
+    text-shadow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+}
 
-    #clickBtn {
-        margin-top: 50px;
-        padding: 30px 60px;
-        font-size: 32px;
-        color: #0ff;
-        background: linear-gradient(45deg, #0ff, #00aaff);
-        border: none;
-        border-radius: 20px;
-        cursor: pointer;
-        box-shadow: 0 0 20px #0ff, 0 0 40px #00aaff;
-        transition: transform 0.1s, box-shadow 0.2s;
-    }
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 15px;
+    font-family: 'Orbitron', sans-serif;
+}
 
-    #clickBtn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 0 30px #0ff, 0 0 60px #00aaff;
-    }
+#clickBtn {
+    margin-top: 40px;
+    padding: 25px 50px;
+    font-size: 28px;
+    color: #0ff;
+    background: linear-gradient(45deg, #0ff, #00aaff);
+    box-shadow: 0 0 20px #0ff, 0 0 40px #00aaff;
+    transition: transform 0.1s, box-shadow 0.2s;
+}
 
-    #stats {
-        margin-top: 40px;
-        text-align: center;
-        font-size: 22px;
-    }
+#clickBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px #0ff, 0 0 60px #00aaff;
+}
 
-    #buyAuto {
-        margin-top: 20px;
-        padding: 10px 25px;
-        font-size: 18px;
-        color: #0ff;
-        background: linear-gradient(45deg, #0044ff, #00ffff);
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        box-shadow: 0 0 10px #00ffff, 0 0 20px #0044ff;
-        transition: transform 0.1s, box-shadow 0.2s;
-    }
+#stats, #shop, #rng {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 20px;
+}
 
-    #buyAuto:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px #00ffff, 0 0 40px #0044ff;
-    }
+.shopBtn, #rngBtn {
+    margin-top: 10px;
+    padding: 10px 25px;
+    font-size: 18px;
+    color: #0ff;
+    background: linear-gradient(45deg, #0044ff, #00ffff);
+    box-shadow: 0 0 10px #00ffff, 0 0 20px #0044ff;
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.shopBtn:hover, #rngBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #00ffff, 0 0 40px #0044ff;
+}
+
+#titles {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #ff0;
+    text-shadow: 0 0 5px #ff0;
+}
 </style>
 </head>
 <body>
-<h1>Zyphra Clicker</h1>
-<button id="clickBtn">⚡ CLICK ⚡</button>
+<h1>Zyphra RNG Clicker</h1>
+<button id="clickBtn">💰 CLICK 💰</button>
 
 <div id="stats">
-    <p>Clicks: <span id="clickCount">0</span></p>
-    <p>Auto Clickers: <span id="autoCount">0</span></p>
-    <button id="buyAuto">Buy Auto Clicker (Cost: 10 clicks)</button>
+    <p>Money: $<span id="money">0</span></p>
+    <p>Auto Cash: <span id="autoCount">0</span></p>
+</div>
+
+<div id="shop">
+    <button class="shopBtn" id="buyAuto">Buy Auto Cash (Cost: $10)</button>
+</div>
+
+<div id="rng">
+    <button id="rngBtn">RNG Roll (Cost: $100)</button>
+    <div id="titles">Titles: None</div>
 </div>
 
 <script>
-let clicks = parseInt(localStorage.getItem('zyphra_clicks')) || 0
-let autoClickers = parseInt(localStorage.getItem('zyphra_autos')) || 0
+let money = parseInt(localStorage.getItem('money')) || 0
+let autoCash = parseInt(localStorage.getItem('autoCash')) || 0
+let titles = JSON.parse(localStorage.getItem('titles')) || []
 
-const clickCountEl = document.getElementById('clickCount')
+let autoCost = parseInt(localStorage.getItem('autoCost')) || 10
+
+const moneyEl = document.getElementById('money')
 const autoCountEl = document.getElementById('autoCount')
 const clickBtn = document.getElementById('clickBtn')
 const buyAutoBtn = document.getElementById('buyAuto')
+const rngBtn = document.getElementById('rngBtn')
+const titlesEl = document.getElementById('titles')
 
 function updateUI() {
-    clickCountEl.textContent = clicks
-    autoCountEl.textContent = autoClickers
+    moneyEl.textContent = money
+    autoCountEl.textContent = autoCash
+    buyAutoBtn.textContent = `Buy Auto Cash (Cost: $${autoCost})`
+    titlesEl.textContent = titles.length ? titles.join(", ") : "None"
 }
 
 clickBtn.addEventListener('click', () => {
-    clicks++
+    money += 1 + getClickBoost()
     saveGame()
     updateUI()
 })
 
 buyAutoBtn.addEventListener('click', () => {
-    if (clicks >= 10) {
-        clicks -= 10
-        autoClickers++
+    if (money >= autoCost) {
+        money -= autoCost
+        autoCash++
+        autoCost = Math.floor(autoCost * 1.5)
         saveGame()
         updateUI()
     } else {
-        alert("Insufficient clicks ⚡")
+        alert("Not enough money!")
+    }
+})
+
+rngBtn.addEventListener('click', () => {
+    if (money >= 100) {
+        money -= 100
+        const title = getRandomTitle()
+        if (!titles.includes(title)) {
+            titles.push(title)
+        }
+        saveGame()
+        updateUI()
+    } else {
+        alert("Need $100 to roll RNG!")
     }
 })
 
 function saveGame() {
-    localStorage.setItem('zyphra_clicks', clicks)
-    localStorage.setItem('zyphra_autos', autoClickers)
+    localStorage.setItem('money', money)
+    localStorage.setItem('autoCash', autoCash)
+    localStorage.setItem('autoCost', autoCost)
+    localStorage.setItem('titles', JSON.stringify(titles))
 }
 
 function autoClick() {
-    clicks += autoClickers
+    money += autoCash + getClickBoost()
     saveGame()
     updateUI()
+}
+
+function getClickBoost() {
+    let boost = 0
+    titles.forEach(t => {
+        if (t === "Lucky") boost += 1
+        if (t === "Rich") boost += 2
+    })
+    return boost
+}
+
+function getRandomTitle() {
+    const possible = ["Lucky", "Rich", "Speedy", "Futurist", "Tycoon"]
+    return possible[Math.floor(Math.random() * possible.length)]
 }
 
 setInterval(autoClick, 1000)
